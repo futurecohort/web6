@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Web 6.0 — 共生网络 / Symbiotic Web：人与 AI 智能体共生的下一代互联网愿景">
+<title>Web 6.0 · 共生网络 | Symbiotic Web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050816;
+  --bg-soft:#0a0f24;
+  --panel:rgba(255,255,255,.04);
+  --panel-strong:rgba(255,255,255,.07);
+  --border:rgba(255,255,255,.10);
+  --text:#eef2ff;
+  --text-dim:#9aa5c9;
+  --accent:#7c5cff;
+  --accent2:#00e5ff;
+  --accent3:#ff5c8a;
+  --warn:#ffb454;
+  --grad:linear-gradient(120deg,#7c5cff 0%,#00e5ff 55%,#7cffcb 100%);
+  --radius:20px;
+  --font:"Inter","Noto Sans SC","Noto Sans TC","Noto Sans JP","Cairo",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.7;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+::selection{background:rgba(124,92,255,.45)}
+
+/* ---------- 背景裝飾 ---------- */
+.bg-orbs{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(110px);opacity:.35;animation:float 18s ease-in-out infinite alternate}
+.orb.o1{width:560px;height:560px;background:#7c5cff;top:-160px;inset-inline-start:-120px}
+.orb.o2{width:480px;height:480px;background:#00e5ff;top:30%;inset-inline-end:-160px;animation-delay:-6s}
+.orb.o3{width:520px;height:520px;background:#ff5c8a;bottom:-200px;inset-inline-start:30%;animation-delay:-12s;opacity:.22}
+@keyframes float{from{transform:translateY(0) scale(1)}to{transform:translateY(60px) scale(1.08)}}
+.bg-grid{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 75%);
+}
+
+/* ---------- 導航 ---------- */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px clamp(18px,5vw,56px);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  background:rgba(5,8,22,.55);
+  border-bottom:1px solid var(--border);
+}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.05rem;letter-spacing:.5px;text-decoration:none;color:var(--text)}
+.logo .mark{
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  background:var(--grad);color:#050816;font-weight:900;font-size:.9rem;
+  box-shadow:0 0 24px rgba(124,92,255,.55);
+}
+.nav-links{display:flex;gap:6px;align-items:center}
+.nav-links a{
+  color:var(--text-dim);text-decoration:none;font-size:.9rem;font-weight:500;
+  padding:8px 14px;border-radius:99px;transition:.25s;
+}
+.nav-links a:hover{color:var(--text);background:var(--panel-strong)}
+/* ---------- 語言選擇按鈕 ---------- */
+.lang-btn{
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  background:var(--panel-strong);color:var(--text);
+  border:1px solid var(--border);border-radius:99px;
+  padding:8px 16px;font-family:var(--font);font-size:.85rem;font-weight:500;
+  transition:.25s;
+}
+.lang-btn:hover{border-color:var(--accent);background:rgba(124,92,255,.16);transform:translateY(-1px)}
+.lang-btn .globe{font-size:1rem}
+.lang-btn .caret{font-size:.65rem;color:var(--text-dim)}
+
+/* ---------- 語言彈窗 ---------- */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;display:none;
+  align-items:center;justify-content:center;padding:20px;
+  background:rgba(3,5,14,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.modal-overlay.open{display:flex;animation:fade .25s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{
+  width:min(560px,100%);max-height:88vh;overflow-y:auto;
+  background:linear-gradient(160deg,rgba(18,24,54,.98),rgba(8,11,28,.98));
+  border:1px solid rgba(124,92,255,.35);border-radius:24px;
+  padding:28px;box-shadow:0 30px 90px rgba(0,0,0,.65),0 0 60px rgba(124,92,255,.18);
+  animation:pop .28s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-title{font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.modal-title span.ico{
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:1rem;
+  background:var(--grad);color:#050816;
+}
+.modal-close{
+  background:var(--panel);border:1px solid var(--border);color:var(--text-dim);
+  width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:1.1rem;line-height:1;transition:.25s;
+}
+.modal-close:hover{color:var(--text);border-color:var(--accent);background:rgba(255,92,138,.15)}
+.modal-hint{color:var(--text-dim);font-size:.82rem;margin:-8px 0 18px}
+.lang-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.lang-opt{
+  display:flex;align-items:center;gap:12px;text-align:start;cursor:pointer;
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  padding:14px 16px;color:var(--text);font-family:var(--font);transition:.25s;
+}
+.lang-opt:hover{border-color:rgba(124,92,255,.6);background:rgba(124,92,255,.12);transform:translateY(-2px)}
+.lang-opt .flag{
+  width:40px;height:40px;flex:0 0 40px;border-radius:12px;display:grid;place-items:center;
+  font-size:.78rem;font-weight:800;letter-spacing:.5px;
+  background:linear-gradient(140deg,rgba(124,92,255,.35),rgba(0,229,255,.22));
+  border:1px solid rgba(124,92,255,.35);color:#eef2ff;
+}
+.lang-opt .txt{display:flex;flex-direction:column;min-width:0}
+.lang-opt .native{font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lang-opt .sub{font-size:.75rem;color:var(--text-dim)}
+.lang-opt .check{margin-inline-start:auto;font-size:1rem;color:#7cffcb;opacity:0;transition:.25s}
+.lang-opt.active{
+  border-color:rgba(124,92,255,.85);
+  background:linear-gradient(120deg,rgba(124,92,255,.22),rgba(0,229,255,.12));
+  box-shadow:0 0 24px rgba(124,92,255,.22);
+}
+.lang-opt.active .check{opacity:1}
+@media (max-width:480px){
+  .lang-grid{grid-template-columns:1fr}
+  .modal{padding:22px 18px;border-radius:20px}
+}
+@media (max-width:400px){
+  .lang-btn #langLabel{display:none}
+  .lang-btn{padding:8px 12px}
+}
+body.modal-open{overflow:hidden}
+.nav-toggle{display:none;background:var(--panel-strong);border:1px solid var(--border);color:var(--text);
+  border-radius:10px;width:40px;height:40px;font-size:1.2rem;cursor:pointer}
+
+/* ---------- Hero ---------- */
+.hero{
+  min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:120px 20px 80px;position:relative;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid var(--border);background:var(--panel);
+  padding:8px 18px;border-radius:99px;font-size:.85rem;color:var(--text-dim);
+  margin-bottom:28px;backdrop-filter:blur(8px);
+}
+.hero-badge .dot{width:8px;height:8px;border-radius:50%;background:#7cffcb;box-shadow:0 0 12px #7cffcb;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero-title{
+  font-size:clamp(3.2rem,11vw,8.5rem);font-weight:900;line-height:1.02;letter-spacing:-2px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 40px rgba(124,92,255,.35));
+}
+.hero-sub{
+  font-size:clamp(1.05rem,2.4vw,1.5rem);font-weight:300;color:var(--text);
+  max-width:760px;margin:26px auto 10px;
+}
+.hero-sub b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+.hero-desc{color:var(--text-dim);max-width:680px;font-size:clamp(.9rem,1.8vw,1.05rem);margin:0 auto 40px}
+.hero-cta{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.btn{
+  text-decoration:none;font-weight:600;font-size:.95rem;padding:14px 32px;border-radius:99px;
+  transition:.3s;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary{background:var(--grad);color:#050816;box-shadow:0 8px 32px rgba(124,92,255,.4)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(0,229,255,.45)}
+.btn-ghost{border:1px solid var(--border);color:var(--text);background:var(--panel)}
+.btn-ghost:hover{border-color:var(--accent);transform:translateY(-3px)}
+.hero-stats{display:flex;gap:clamp(24px,6vw,72px);margin-top:70px;flex-wrap:wrap;justify-content:center}
+.stat{text-align:center}
+.stat .num{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .lbl{font-size:.82rem;color:var(--text-dim);letter-spacing:1px}
+.scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);color:var(--text-dim);font-size:1.2rem;animation:bob 2s infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,10px)}}
+
+/* ---------- 區塊通用 ---------- */
+section{padding:110px clamp(18px,5vw,56px);max-width:1280px;margin:0 auto}
+.sec-head{text-align:center;margin-bottom:64px}
+.sec-tag{
+  display:inline-block;font-size:.78rem;letter-spacing:3px;text-transform:uppercase;
+  color:var(--accent2);border:1px solid rgba(0,229,255,.3);border-radius:99px;padding:6px 16px;margin-bottom:18px;
+  background:rgba(0,229,255,.06);
+}
+.sec-title{font-size:clamp(1.9rem,4.5vw,3rem);font-weight:800;letter-spacing:-1px;margin-bottom:14px}
+.sec-sub{color:var(--text-dim);max-width:720px;margin:0 auto;font-size:clamp(.92rem,1.8vw,1.05rem)}
+
+/* ---------- 時代演進 ---------- */
+.gen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.gen-card{
+  position:relative;border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--panel);padding:30px 26px;transition:.35s;overflow:hidden;
+}
+.gen-card::before{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.06),transparent 45%);opacity:0;transition:.35s}
+.gen-card:hover{transform:translateY(-6px);border-color:rgba(124,92,255,.5);box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.gen-card:hover::before{opacity:1}
+.gen-num{font-size:.8rem;font-weight:700;letter-spacing:2px;color:var(--text-dim);margin-bottom:10px;display:block}
+.gen-name{font-size:1.25rem;font-weight:700;margin-bottom:10px}
+.gen-desc{font-size:.92rem;color:var(--text-dim)}
+.gen-card.future{
+  background:linear-gradient(150deg,rgba(124,92,255,.16),rgba(0,229,255,.08));
+  border:1px solid rgba(124,92,255,.55);
+  box-shadow:0 0 50px rgba(124,92,255,.22);
+}
+.gen-card.future .gen-num{color:var(--accent2)}
+.gen-badge{
+  position:absolute;top:16px;inset-inline-end:16px;font-size:.7rem;font-weight:700;
+  background:var(--grad);color:#050816;padding:4px 12px;border-radius:99px;letter-spacing:1px;
+}
+
+/* ---------- 核心理想 ---------- */
+.ideal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.ideal-card{
+  border:1px solid var(--border);border-radius:var(--radius);background:var(--panel);
+  padding:34px 28px;position:relative;transition:.35s;overflow:hidden;
+}
+.ideal-card::after{
+  content:"";position:absolute;top:0;inset-inline:0;height:3px;background:var(--grad);
+  opacity:0;transition:.35s;
+}
+.ideal-card:hover{transform:translateY(-6px);background:var(--panel-strong);box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.ideal-card:hover::after{opacity:1}
+.ideal-icon{
+  width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:1.6rem;
+  background:linear-gradient(140deg,rgba(124,92,255,.25),rgba(0,229,255,.15));
+  border:1px solid rgba(124,92,255,.35);margin-bottom:20px;
+}
+.ideal-title{font-size:1.12rem;font-weight:700;margin-bottom:10px}
+.ideal-desc{font-size:.92rem;color:var(--text-dim)}
+
+/* ---------- 挑戰與約束 ---------- */
+.const-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.const-card{
+  border:1px solid rgba(255,180,84,.28);border-radius:var(--radius);
+  background:linear-gradient(150deg,rgba(255,180,84,.09),rgba(255,92,138,.05));
+  padding:30px 28px;transition:.35s;
+}
+.const-card:hover{transform:translateY(-5px);box-shadow:0 18px 44px rgba(0,0,0,.4)}
+.const-icon{font-size:1.5rem;margin-bottom:14px}
+.const-title{font-size:1.05rem;font-weight:700;margin-bottom:8px;color:var(--warn)}
+.const-desc{font-size:.92rem;color:var(--text-dim)}
+
+/* ---------- 總結引言 ---------- */
+.quote-wrap{text-align:center;max-width:900px;margin:0 auto;position:relative;padding-top:40px}
+.quote-mark{font-size:5rem;line-height:1;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;opacity:.9}
+.quote-text{
+  font-size:clamp(1.15rem,2.6vw,1.7rem);font-weight:400;line-height:1.9;margin:24px 0 30px;
+}
+.quote-text b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+.quote-label{color:var(--text-dim);font-size:.85rem;letter-spacing:2px;text-transform:uppercase}
+
+/* ---------- 頁腳 ---------- */
+footer{
+  border-top:1px solid var(--border);padding:44px 24px;text-align:center;
+  color:var(--text-dim);font-size:.85rem;background:rgba(5,8,22,.6);
+}
+footer .foot-logo{font-weight:800;color:var(--text);margin-bottom:8px}
+footer .foot-note{max-width:640px;margin:8px auto 0}
+footer .foot-copy{
+  max-width:640px;margin:20px auto 0;padding-top:16px;
+  border-top:1px solid var(--border);color:var(--text-dim);font-size:.82rem;letter-spacing:.5px;
+}
+
+/* ---------- 滾動顯現動畫 ---------- */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}
+.reveal.d4{transition-delay:.32s}.reveal.d5{transition-delay:.40s}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .orb,.scroll-hint,.hero-badge .dot{animation:none}
+  html{scroll-behavior:auto}
+}
+
+/* ---------- 響應式 ---------- */
+@media (max-width:1024px){
+  .gen-grid,.ideal-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:768px){
+  .nav-links{
+    position:fixed;top:66px;inset-inline:0;flex-direction:column;
+    background:rgba(5,8,22,.96);border-bottom:1px solid var(--border);
+    padding:18px;gap:4px;display:none;
+  }
+  .nav-links.open{display:flex}
+  .nav-links a{width:100%;text-align:center;padding:12px}
+  .nav-toggle{display:grid;place-items:center}
+  .gen-grid,.ideal-grid,.const-grid{grid-template-columns:1fr}
+  section{padding:80px 18px}
+  .hero{padding-top:100px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orbs"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+<div class="bg-grid"></div>
+
+<header class="nav">
+  <a class="logo" href="#top"><span class="mark">6</span><span>WEB 6.0</span></a>
+  <nav class="nav-links" id="navLinks">
+    <a href="#timeline" data-i18n="nav.timeline">时代演进</a>
+    <a href="#ideals" data-i18n="nav.ideals">核心理想</a>
+    <a href="#constraints" data-i18n="nav.constraints">挑战约束</a>
+    <a href="#quote" data-i18n="nav.summary">愿景总结</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="lang-btn" id="langBtn" aria-haspopup="dialog" aria-label="Language">
+      <span class="globe">🌐</span>
+      <span id="langLabel">简体中文</span>
+      <span class="caret">▾</span>
+    </button>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero" style="max-width:none">
+    <div class="hero-badge reveal"><span class="dot"></span><span data-i18n="hero.tag">下一代互联网愿景 · 前沿构想</span></div>
+    <h1 class="hero-title reveal d1">Web 6.0</h1>
+    <p class="hero-sub reveal d2" data-i18n="hero.sub">共生网络 · 自主互联网 —— 人、AI 智能体与物理世界的<b>深度共生</b></p>
+    <p class="hero-desc reveal d3" data-i18n="hero.desc">不再手动点击浏览网页：由个人 AI 智能体代表你在可信的去中心化网络中检索、协商、交易与协作。人下达目标，智能体执行任务，打通认知—数字—物理世界。</p>
+    <div class="hero-cta reveal d4">
+      <a class="btn btn-primary" href="#ideals" data-i18n="hero.cta1">探索核心理想</a>
+      <a class="btn btn-ghost" href="#timeline" data-i18n="hero.cta2">回顾时代演进</a>
+    </div>
+    <div class="hero-stats reveal d5">
+      <div class="stat"><div class="num">6</div><div class="lbl" data-i18n="hero.s1">代际演进</div></div>
+      <div class="stat"><div class="num">6</div><div class="lbl" data-i18n="hero.s2">核心理想</div></div>
+      <div class="stat"><div class="num">4</div><div class="lbl" data-i18n="hero.s3">核心约束</div></div>
+    </div>
+    <div class="scroll-hint">▾</div>
+  </section>
+
+  <!-- ================= 時代演進 ================= -->
+  <section id="timeline">
+    <div class="sec-head reveal">
+      <span class="sec-tag" data-i18n="sec.gen.tag">Evolution</span>
+      <h2 class="sec-title" data-i18n="sec.gen.title">从 Web1 到 Web6 的演进之路</h2>
+      <p class="sec-sub" data-i18n="sec.gen.sub">每一次范式跃迁，都重新定义人与网络的关系。Web 6.0 让网络第一次真正"与人共生"。</p>
+    </div>
+    <div class="gen-grid">
+      <div class="gen-card reveal"><span class="gen-num">WEB 1.0</span><h3 class="gen-name" data-i18n="g1.name">只读网络</h3><p class="gen-desc" data-i18n="g1.desc">静态网页，信息单向分发，用户只能浏览，无法参与。</p></div>
+      <div class="gen-card reveal d1"><span class="gen-num">WEB 2.0</span><h3 class="gen-name" data-i18n="g2.name">读写网络</h3><p class="gen-desc" data-i18n="g2.desc">用户生成内容、社交协作兴起，平台成为中心，数据归于巨头。</p></div>
+      <div class="gen-card reveal d2"><span class="gen-num">WEB 3.0</span><h3 class="gen-name" data-i18n="g3.name">读写拥有</h3><p class="gen-desc" data-i18n="g3.desc">区块链与去中心化，数字所有权回归用户，价值网络成型。</p></div>
+      <div class="gen-card reveal d3"><span class="gen-num">WEB 4.0</span><h3 class="gen-name" data-i18n="g4.name">智能网络</h3><p class="gen-desc" data-i18n="g4.desc">AI 理解内容、预测服务、万物互联，网络开始"懂你"。</p></div>
+      <div class="gen-card reveal d4"><span class="gen-num">WEB 5.0</span><h3 class="gen-name" data-i18n="g5.name">人本网络</h3><p class="gen-desc" data-i18n="g5.desc">自主身份、数据主权、情感感知，网络以人为中心运转。</p></div>
+      <div class="gen-card future reveal d5"><span class="gen-badge" data-i18n="g6.badge">未来愿景</span><span class="gen-num">WEB 6.0</span><h3 class="gen-name" data-i18n="g6.name">共生自主网络</h3><p class="gen-desc" data-i18n="g6.desc">智能代理成为主体，人与网络达成认知级协同，虚实深度闭环。</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 核心理想 ================= -->
+  <section id="ideals">
+    <div class="sec-head reveal">
+      <span class="sec-tag" data-i18n="sec.ideals.tag">Vision</span>
+      <h2 class="sec-title" data-i18n="sec.ideals.title">Web 6.0 的六大核心理想</h2>
+      <p class="sec-sub" data-i18n="sec.ideals.sub">从交互范式到物理闭环，六大理想共同勾勒出下一代互联网的完整图景。</p>
+    </div>
+    <div class="ideal-grid">
+      <div class="ideal-card reveal"><div class="ideal-icon">🤖</div><h3 class="ideal-title" data-i18n="i1.title">AI 智能体成为一等公民</h3><p class="ideal-desc" data-i18n="i1.desc">个人 AI 代理代表用户完成检索、协商、交易与协作；网络主体变为人 + 海量自治智能体，人下达目标、监督决策，不再处理细碎操作。</p></div>
+      <div class="ideal-card reveal d1"><div class="ideal-icon">🧠</div><h3 class="ideal-title" data-i18n="i2.title">认知级人网共生</h3><p class="ideal-desc" data-i18n="i2.desc">突破键鼠与屏幕：借助脑机接口（BCI），思想与意图直接和网络交互，网络理解人的情绪与认知——"心灵互联网"愿景。</p></div>
+      <div class="ideal-card reveal d2"><div class="ideal-icon">🪪</div><h3 class="ideal-title" data-i18n="i3.title">去中心化可验证原生身份</h3><p class="ideal-desc" data-i18n="i3.desc">以 W3C DID 与可验证凭证为底座，身份、数据、信誉完全由用户掌控，跨平台通用；智能代理携带授权凭证可信交互，隐私默认保护。</p></div>
+      <div class="ideal-card reveal d3"><div class="ideal-icon">🧩</div><h3 class="ideal-title" data-i18n="i4.title">异构智能统一编排</h3><p class="ideal-desc" data-i18n="i4.desc">打破大模型、Agent 框架与协议的割裂：统一抽象层让一套应用到处部署，技能跨模型迁移复用，系统具备自我演进能力。</p></div>
+      <div class="ideal-card reveal d4"><div class="ideal-icon">🌐</div><h3 class="ideal-title" data-i18n="i5.title">虚实物理世界深度闭环</h3><p class="ideal-desc" data-i18n="i5.desc">Web 不再局限于浏览器：联动 IoT 传感、物理设备与数字孪生，网络感知现实，智能代理执行现实动作，实现双向闭环。</p></div>
+      <div class="ideal-card reveal d5"><div class="ideal-icon">🛡️</div><h3 class="ideal-title" data-i18n="i6.title">自治、可观测、可持续生态</h3><p class="ideal-desc" data-i18n="i6.desc">自优化、自修复，全链路可观测可审计；分布式信誉激励带来经济可持续；人机协同而非 AI 接管，人类保留最终控制权。</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 挑戰約束 ================= -->
+  <section id="constraints">
+    <div class="sec-head reveal">
+      <span class="sec-tag" data-i18n="sec.const.tag">Challenges</span>
+      <h2 class="sec-title" data-i18n="sec.const.title">理想背后的核心约束</h2>
+      <p class="sec-sub" data-i18n="sec.const.sub">直面理想的反面：技术、安全、伦理与标准，是通往 Web 6.0 必须跨越的四道关卡。</p>
+    </div>
+    <div class="const-grid">
+      <div class="const-card reveal"><div class="const-icon">🦾</div><h3 class="const-title" data-i18n="c1.title">脑机接口落地遥远</h3><p class="const-desc" data-i18n="c1.desc">BCI 硬件与神经信号解析技术，距离大规模商用落地仍有漫长道路。</p></div>
+      <div class="const-card reveal d1"><div class="const-icon">⚠️</div><h3 class="const-title" data-i18n="c2.title">大规模智能体安全风险</h3><p class="const-desc" data-i18n="c2.desc">自治代理可能被劫持、产生虚假交互与算法偏见，安全边界亟待建立。</p></div>
+      <div class="const-card reveal d2"><div class="const-icon">⚖️</div><h3 class="const-title" data-i18n="c3.title">隐私、伦理与法律难题</h3><p class="const-desc" data-i18n="c3.desc">AI 代理行为的责任如何界定？思想数据泄露风险如何防范？规则尚未就绪。</p></div>
+      <div class="const-card reveal d3"><div class="const-icon">📜</div><h3 class="const-title" data-i18n="c4.title">协议与标准尚未形成</h3><p class="const-desc" data-i18n="c4.desc">目前更多是学术与前瞻构想，暂无统一官方标准与成熟工业规范。</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 總結 ================= -->
+  <section id="quote">
+    <div class="quote-wrap reveal">
+      <div class="quote-mark">"</div>
+      <p class="quote-text" data-i18n="quote.text">构建一个人与 AI 智能代理<b>共生</b>的互联网：人输出意图，自治智能体在可信去中心化网络中完成复杂任务，打通<b>认知—数字—物理世界</b>，用户掌握身份与数据主权，人机协同，而非人手动操作网页。</p>
+      <div class="quote-label" data-i18n="quote.label">Web 6.0 · 一句话总结</div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-logo">WEB 6.0 · <span data-i18n="footer.name">共生网络</span></div>
+  <div data-i18n="footer.note">本站为下一代互联网愿景的概念展示。Web 6.0 属前沿前瞻构想，暂无统一官方标准。</div>
+  <div class="foot-copy">© <span id="year">2026</span> WEB 6.0 · <span data-i18n="footer.rights">保留所有权利</span></div>
+</footer>
+
+<!-- ================= 語言彈窗 ================= -->
+<div class="modal-overlay" id="langModal" role="dialog" aria-modal="true" aria-label="Select language">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title"><span class="ico">🌐</span><span id="modalTitle">选择语言</span></div>
+      <button class="modal-close" id="langClose" aria-label="Close">✕</button>
+    </div>
+    <p class="modal-hint" id="modalHint">共 6 种语言 · 阿拉伯语将自动切换为从右至左布局</p>
+    <div class="lang-grid" id="langGrid"></div>
+  </div>
+</div>
+
+<script>
+/* ================== 多語言詞典 ================== */
+const I18N = {
+"zh-CN":{
+  "nav.timeline":"时代演进","nav.ideals":"核心理想","nav.constraints":"挑战约束","nav.summary":"愿景总结",
+  "hero.tag":"下一代互联网愿景 · 前沿构想",
+  "hero.sub":"共生网络 · 自主互联网 —— 人、AI 智能体与物理世界的<b>深度共生</b>",
+  "hero.desc":"不再手动点击浏览网页：由个人 AI 智能体代表你在可信的去中心化网络中检索、协商、交易与协作。人下达目标，智能体执行任务，打通认知—数字—物理世界。",
+  "hero.cta1":"探索核心理想","hero.cta2":"回顾时代演进",
+  "hero.s1":"代际演进","hero.s2":"核心理想","hero.s3":"核心约束",
+  "sec.gen.tag":"Evolution","sec.gen.title":"从 Web1 到 Web6 的演进之路",
+  "sec.gen.sub":"每一次范式跃迁，都重新定义人与网络的关系。Web 6.0 让网络第一次真正“与人共生”。",
+  "g1.name":"只读网络","g1.desc":"静态网页，信息单向分发，用户只能浏览，无法参与。",
+  "g2.name":"读写网络","g2.desc":"用户生成内容、社交协作兴起，平台成为中心，数据归于巨头。",
+  "g3.name":"读写拥有","g3.desc":"区块链与去中心化，数字所有权回归用户，价值网络成型。",
+  "g4.name":"智能网络","g4.desc":"AI 理解内容、预测服务、万物互联，网络开始“懂你”。",
+  "g5.name":"人本网络","g5.desc":"自主身份、数据主权、情感感知，网络以人为中心运转。",
+  "g6.badge":"未来愿景","g6.name":"共生自主网络","g6.desc":"智能代理成为主体，人与网络达成认知级协同，虚实深度闭环。",
+  "sec.ideals.tag":"Vision","sec.ideals.title":"Web 6.0 的六大核心理想",
+  "sec.ideals.sub":"从交互范式到物理闭环，六大理想共同勾勒出下一代互联网的完整图景。",
+  "i1.title":"AI 智能体成为一等公民","i1.desc":"个人 AI 代理代表用户完成检索、协商、交易与协作；网络主体变为人 + 海量自治智能体，人下达目标、监督决策，不再处理细碎操作。",
+  "i2.title":"认知级人网共生","i2.desc":"突破键鼠与屏幕：借助脑机接口（BCI），思想与意图直接和网络交互，网络理解人的情绪与认知——“心灵互联网”愿景。",
+  "i3.title":"去中心化可验证原生身份","i3.desc":"以 W3C DID 与可验证凭证为底座，身份、数据、信誉完全由用户掌控，跨平台通用；智能代理携带授权凭证可信交互，隐私默认保护。",
+  "i4.title":"异构智能统一编排","i4.desc":"打破大模型、Agent 框架与协议的割裂：统一抽象层让一套应用到处部署，技能跨模型迁移复用，系统具备自我演进能力。",
+  "i5.title":"虚实物理世界深度闭环","i5.desc":"Web 不再局限于浏览器：联动 IoT 传感、物理设备与数字孪生，网络感知现实，智能代理执行现实动作，实现双向闭环。",
+  "i6.title":"自治、可观测、可持续生态","i6.desc":"自优化、自修复，全链路可观测可审计；分布式信誉激励带来经济可持续；人机协同而非 AI 接管，人类保留最终控制权。",
+  "sec.const.tag":"Challenges","sec.const.title":"理想背后的核心约束",
+  "sec.const.sub":"直面理想的反面：技术、安全、伦理与标准，是通往 Web 6.0 必须跨越的四道关卡。",
+  "c1.title":"脑机接口落地遥远","c1.desc":"BCI 硬件与神经信号解析技术，距离大规模商用落地仍有漫长道路。",
+  "c2.title":"大规模智能体安全风险","c2.desc":"自治代理可能被劫持、产生虚假交互与算法偏见，安全边界亟待建立。",
+  "c3.title":"隐私、伦理与法律难题","c3.desc":"AI 代理行为的责任如何界定？思想数据泄露风险如何防范？规则尚未就绪。",
+  "c4.title":"协议与标准尚未形成","c4.desc":"目前更多是学术与前瞻构想，暂无统一官方标准与成熟工业规范。",
+  "quote.text":"构建一个人与 AI 智能代理<b>共生</b>的互联网：人输出意图，自治智能体在可信去中心化网络中完成复杂任务，打通<b>认知—数字—物理世界</b>，用户掌握身份与数据主权，人机协同，而非人手动操作网页。",
+  "quote.label":"Web 6.0 · 一句话总结",
+  "footer.name":"共生网络","footer.note":"本站为下一代互联网愿景的概念展示。Web 6.0 属前沿前瞻构想，暂无统一官方标准。",
+  "footer.rights":"保留所有权利"
+},
+"zh-TW":{
+  "nav.timeline":"時代演進","nav.ideals":"核心理想","nav.constraints":"挑戰約束","nav.summary":"願景總結",
+  "hero.tag":"下一代網際網路願景 · 前瞻構想",
+  "hero.sub":"共生網路 · 自主網際網路 —— 人、AI 智慧代理與物理世界的<b>深度共生</b>",
+  "hero.desc":"不再手動點擊瀏覽網頁：由個人 AI 智慧代理代表你在可信的去中心化網路中檢索、協商、交易與協作。人下達目標，代理執行任務，打通認知—數位—物理世界。",
+  "hero.cta1":"探索核心理想","hero.cta2":"回顧時代演進",
+  "hero.s1":"代際演進","hero.s2":"核心理想","hero.s3":"核心約束",
+  "sec.gen.tag":"Evolution","sec.gen.title":"從 Web1 到 Web6 的演進之路",
+  "sec.gen.sub":"每一次範式躍遷，都重新定義人與網路的關係。Web 6.0 讓網路第一次真正「與人共生」。",
+  "g1.name":"唯讀網路","g1.desc":"靜態網頁，資訊單向分發，使用者只能瀏覽，無法參與。",
+  "g2.name":"讀寫網路","g2.desc":"使用者生成內容、社交協作興起，平台成為中心，資料歸於巨頭。",
+  "g3.name":"讀寫擁有","g3.desc":"區塊鏈與去中心化，數位所有權回歸使用者，價值網路成型。",
+  "g4.name":"智慧網路","g4.desc":"AI 理解內容、預測服務、萬物互聯，網路開始「懂你」。",
+  "g5.name":"以人為本網路","g5.desc":"自主身分、資料主權、情感感知，網路以人為中心運轉。",
+  "g6.badge":"未來願景","g6.name":"共生自主網路","g6.desc":"智慧代理成為主體，人與網路達成認知級協同，虛實深度閉環。",
+  "sec.ideals.tag":"Vision","sec.ideals.title":"Web 6.0 的六大核心理想",
+  "sec.ideals.sub":"從互動範式到物理閉環，六大理想共同勾勒出下一代網際網路的完整圖景。",
+  "i1.title":"AI 智慧代理成為一等公民","i1.desc":"個人 AI 代理代表使用者完成檢索、協商、交易與協作；網路主體變為人 + 海量自治智慧代理，人下達目標、監督決策，不再處理細碎操作。",
+  "i2.title":"認知級人網共生","i2.desc":"突破鍵鼠與螢幕：藉助腦機介面（BCI），思想與意圖直接和網路互動，網路理解人的情緒與認知——「心靈網際網路」願景。",
+  "i3.title":"去中心化可驗證原生身分","i3.desc":"以 W3C DID 與可驗證憑證為底座，身分、資料、信譽完全由使用者掌控，跨平台通用；智慧代理攜帶授權憑證可信互動，隱私預設保護。",
+  "i4.title":"異構智慧統一編排","i4.desc":"打破大模型、Agent 框架與協定的割裂：統一抽象層讓一套應用到處部署，技能跨模型遷移複用，系統具備自我演進能力。",
+  "i5.title":"虛實物理世界深度閉環","i5.desc":"Web 不再侷限於瀏覽器：聯動 IoT 感測、物理設備與數位孿生，網路感知現實，智慧代理執行現實動作，實現雙向閉環。",
+  "i6.title":"自治、可觀測、可持續生態","i6.desc":"自優化、自修復，全鏈路可觀測可審計；分散式信譽激勵帶來經濟可持續；人機協同而非 AI 接管，人類保留最終控制權。",
+  "sec.const.tag":"Challenges","sec.const.title":"理想背後的核心約束",
+  "sec.const.sub":"直面理想的反面：技術、安全、倫理與標準，是通往 Web 6.0 必須跨越的四道關卡。",
+  "c1.title":"腦機介面落地遙遠","c1.desc":"BCI 硬體與神經訊號解析技術，距離大規模商用落地仍有漫長道路。",
+  "c2.title":"大規模智慧代理安全風險","c2.desc":"自治代理可能被劫持、產生虛假互動與演算法偏見，安全邊界亟待建立。",
+  "c3.title":"隱私、倫理與法律難題","c3.desc":"AI 代理行為的責任如何界定？思想資料洩露風險如何防範？規則尚未就緒。",
+  "c4.title":"協定與標準尚未形成","c4.desc":"目前更多是學術與前瞻構想，暫無統一官方標準與成熟工業規範。",
+  "quote.text":"構建一個人與 AI 智慧代理<b>共生</b>的網際網路：人輸出意圖，自治代理在可信去中心化網路中完成複雜任務，打通<b>認知—數位—物理世界</b>，使用者掌握身分與資料主權，人機協同，而非人手動操作網頁。",
+  "quote.label":"Web 6.0 · 一句話總結",
+  "footer.name":"共生網路","footer.note":"本站為下一代網際網路願景的概念展示。Web 6.0 屬前瞻構想，暫無統一官方標準。",
+  "footer.rights":"版權所有，保留一切權利"
+},
+"en":{
+  "nav.timeline":"Evolution","nav.ideals":"Core Vision","nav.constraints":"Challenges","nav.summary":"Summary",
+  "hero.tag":"Next-Generation Internet Vision · Frontier Concept",
+  "hero.sub":"The Symbiotic Web · Autonomous Internet — a <b>deep symbiosis</b> of humans, AI agents and the physical world",
+  "hero.desc":"No more manual clicking and browsing: your personal AI agent searches, negotiates, transacts and collaborates for you across a trusted decentralized network. Humans set goals, agents execute — bridging cognition, digital and physical worlds.",
+  "hero.cta1":"Explore the Vision","hero.cta2":"See the Evolution",
+  "hero.s1":"Generations","hero.s2":"Core Ideals","hero.s3":"Key Constraints",
+  "sec.gen.tag":"Evolution","sec.gen.title":"The Road from Web1 to Web6",
+  "sec.gen.sub":"Every paradigm shift redefines the relationship between humans and the network. Web 6.0 makes the web truly symbiotic with people for the first time.",
+  "g1.name":"Read-Only Web","g1.desc":"Static pages, one-way information distribution — users can only browse, not participate.",
+  "g2.name":"Read-Write Web","g2.desc":"User-generated content and social collaboration rise; platforms become centers, data belongs to giants.",
+  "g3.name":"Read-Write-Own","g3.desc":"Blockchain and decentralization return digital ownership to users; a value web takes shape.",
+  "g4.name":"Intelligent Web","g4.desc":"AI understands content, predicts services, connects everything — the web starts to understand you.",
+  "g5.name":"Human-Centric Web","g5.desc":"Self-sovereign identity, data ownership, emotional awareness — the web revolves around people.",
+  "g6.badge":"Future Vision","g6.name":"Symbiotic Autonomous Web","g6.desc":"Agents become the primary actors; humans and the network achieve cognitive-level collaboration with a deep physical-digital loop.",
+  "sec.ideals.tag":"Vision","sec.ideals.title":"Six Core Ideals of Web 6.0",
+  "sec.ideals.sub":"From interaction paradigms to the physical loop, six ideals sketch the complete picture of the next-generation internet.",
+  "i1.title":"AI Agents as First-Class Citizens","i1.desc":"Personal AI agents search, negotiate, transact and collaborate on your behalf. The network's actors become humans plus massive autonomous agents — people set goals and supervise instead of handling granular operations.",
+  "i2.title":"Cognitive Human–Web Symbiosis","i2.desc":"Beyond keyboard, mouse and screen: brain-computer interfaces (BCI) let thought and intent interact with the network directly — the “Mind Internet” vision.",
+  "i3.title":"Decentralized Verifiable Identity","i3.desc":"Built on W3C DID and verifiable credentials: users fully control identity, data and reputation across platforms. Agents carry authorized credentials for trusted interaction — privacy by default.",
+  "i4.title":"Unified Orchestration of Heterogeneous AI","i4.desc":"End the fragmentation of models, agent frameworks and protocols: a unified abstraction layer lets one app deploy everywhere, skills transfer across models, and systems evolve themselves.",
+  "i5.title":"Deep Physical-Digital Loop","i5.desc":"The web is no longer confined to browsers: IoT sensors, physical devices and digital twins interconnect — the network senses reality and agents act back into it, closing the loop both ways.",
+  "i6.title":"Autonomous, Observable, Sustainable","i6.desc":"Self-optimizing, self-healing systems with end-to-end observability and auditability; distributed reputation incentives sustain the economy; human-machine collaboration — never full AI takeover — keeps humans in final control.",
+  "sec.const.tag":"Challenges","sec.const.title":"Core Constraints Behind the Ideal",
+  "sec.const.sub":"Facing the other side of the ideal: technology, security, ethics and standards are the four gates on the road to Web 6.0.",
+  "c1.title":"BCI Is Still Far Away","c1.desc":"BCI hardware and neural signal decoding remain a long way from large-scale commercial adoption.",
+  "c2.title":"Mass-Scale Agent Security Risks","c2.desc":"Autonomous agents can be hijacked, produce fake interactions and algorithmic bias — security boundaries are urgently needed.",
+  "c3.title":"Privacy, Ethics and Legal Puzzles","c3.desc":"Who is liable for an AI agent's actions? How do we prevent thought-data leaks? The rules are not ready.",
+  "c4.title":"No Protocols or Standards Yet","c4.desc":"Today it is mostly academic and forward-looking concept — no unified official standard or mature industrial specification exists.",
+  "quote.text":"Build an internet where humans and AI agents <b>co-exist symbiotically</b>: humans express intent, autonomous agents complete complex tasks in a trusted decentralized network, bridging <b>cognition, digital and physical worlds</b> — users own identity and data sovereignty, through human-machine collaboration rather than manually operating web pages.",
+  "quote.label":"Web 6.0 · In One Sentence",
+  "footer.name":"Symbiotic Web","footer.note":"This site is a concept showcase of the next-generation internet vision. Web 6.0 is a frontier concept without a unified official standard.",
+  "footer.rights":"All rights reserved"
+},
+"es":{
+  "nav.timeline":"Evolución","nav.ideals":"Visión Central","nav.constraints":"Desafíos","nav.summary":"Resumen",
+  "hero.tag":"Visión de la próxima generación de internet · Concepto de vanguardia",
+  "hero.sub":"La Web Simbiótica · Internet Autónoma — una <b>simbiosis profunda</b> entre humanos, agentes de IA y el mundo físico",
+  "hero.desc":"Adiós al clic y la navegación manual: tu agente de IA personal busca, negocia, transacciona y colabora por ti en una red descentralizada confiable. Tú defines objetivos, el agente ejecuta — conectando cognición, mundo digital y mundo físico.",
+  "hero.cta1":"Explorar la visión","hero.cta2":"Ver la evolución",
+  "hero.s1":"Generaciones","hero.s2":"Ideales centrales","hero.s3":"Restricciones clave",
+  "sec.gen.tag":"Evolución","sec.gen.title":"El camino de Web1 a Web6",
+  "sec.gen.sub":"Cada salto de paradigma redefine la relación entre humanos y la red. Web 6.0 hace que la web sea verdaderamente simbiótica por primera vez.",
+  "g1.name":"Web de solo lectura","g1.desc":"Páginas estáticas, distribución unidireccional de información — el usuario solo navega, no participa.",
+  "g2.name":"Web de lectura y escritura","g2.desc":"Surgen los contenidos generados por usuarios y la colaboración social; las plataformas se vuelven centros y los gigantes poseen los datos.",
+  "g3.name":"Leer, escribir, poseer","g3.desc":"Blockchain y descentralización devuelven la propiedad digital a los usuarios; toma forma una red de valor.",
+  "g4.name":"Web inteligente","g4.desc":"La IA comprende contenidos, predice servicios y conecta todo — la red empieza a entenderte.",
+  "g5.name":"Web centrada en el humano","g5.desc":"Identidad autónoma, soberanía de datos, percepción emocional — la web gira en torno a las personas.",
+  "g6.badge":"Visión futura","g6.name":"Web simbiótica autónoma","g6.desc":"Los agentes se convierten en protagonistas; humanos y red logran colaboración a nivel cognitivo con un bucle profundo físico-digital.",
+  "sec.ideals.tag":"Visión","sec.ideals.title":"Los seis ideales centrales de Web 6.0",
+  "sec.ideals.sub":"Del paradigma de interacción al bucle físico, seis ideales esbozan el panorama completo de la próxima internet.",
+  "i1.title":"Agentes de IA como ciudadanos de primera clase","i1.desc":"Tu agente personal busca, negocia, transacciona y colabora en tu nombre. Los actores de la red pasan a ser humanos más enjambres de agentes autónomos: tú defines objetivos y supervisas, sin ocuparte de operaciones menores.",
+  "i2.title":"Simbiosis cognitiva humano-red","i2.desc":"Más allá del teclado y la pantalla: las interfaces cerebro-computadora (BCI) permiten que el pensamiento y la intención interactúen directamente con la red — la visión del “Internet de la Mente”.",
+  "i3.title":"Identidad descentralizada verificable","i3.desc":"Basada en W3C DID y credenciales verificables: el usuario controla plenamente identidad, datos y reputación en todas las plataformas. Los agentes actúan con credenciales autorizadas — privacidad por defecto.",
+  "i4.title":"Orquestación unificada de IA heterogénea","i4.desc":"Fin a la fragmentación de modelos, frameworks y protocolos: una capa de abstracción unificada permite desplegar una app en cualquier lugar, transferir habilidades entre modelos y sistemas que evolucionan solos.",
+  "i5.title":"Bucle profundo físico-digital","i5.desc":"La web ya no se limita al navegador: sensores IoT, dispositivos físicos y gemelos digitales se interconectan — la red percibe la realidad y los agentes actúan sobre ella.",
+  "i6.title":"Autónomo, observable, sostenible","i6.desc":"Sistemas que se optimizan y reparan a sí mismos, con observabilidad y auditoría de punta a punta; incentivos de reputación distribuida sostienen la economía; colaboración humano-máquina — nunca un dominio total de la IA — mantiene el control final en manos humanas.",
+  "sec.const.tag":"Desafíos","sec.const.title":"Restricciones centrales detrás del ideal",
+  "sec.const.sub":"Mirar el reverso del ideal: tecnología, seguridad, ética y estándares son las cuatro puertas en el camino hacia Web 6.0.",
+  "c1.title":"La BCI aún está lejos","c1.desc":"El hardware BCI y la decodificación de señales neuronales siguen lejos de una adopción comercial masiva.",
+  "c2.title":"Riesgos de seguridad a gran escala","c2.desc":"Los agentes autónomos pueden ser secuestrados, generar interacciones falsas y sesgos algorítmicos — urge establecer fronteras de seguridad.",
+  "c3.title":"Privacidad, ética y derecho","c3.desc":"¿Quién responde por las acciones de un agente de IA? ¿Cómo evitar fugas de datos del pensamiento? Las reglas aún no existen.",
+  "c4.title":"Sin protocolos ni estándares","c4.desc":"Hoy es mayormente un concepto académico y prospectivo — no existe un estándar oficial unificado ni especificaciones industriales maduras.",
+  "quote.text":"Construir una internet donde humanos y agentes de IA <b>coexistan simbióticamente</b>: el humano expresa intenciones, los agentes autónomos completan tareas complejas en una red descentralizada confiable, conectando <b>cognición, mundo digital y físico</b> — el usuario posee su identidad y soberanía de datos, mediante colaboración humano-máquina en lugar de operar páginas manualmente.",
+  "quote.label":"Web 6.0 · En una frase",
+  "footer.name":"Web Simbiótica","footer.note":"Este sitio es una muestra conceptual de la visión de la próxima generación de internet. Web 6.0 es un concepto de vanguardia sin estándar oficial unificado.",
+  "footer.rights":"Todos los derechos reservados"
+},
+"fr":{
+  "nav.timeline":"Évolution","nav.ideals":"Vision centrale","nav.constraints":"Défis","nav.summary":"Synthèse",
+  "hero.tag":"Vision de l'internet de nouvelle génération · Concept d'avant-garde",
+  "hero.sub":"Le Web Symbiotique · Internet autonome — une <b>symbiose profonde</b> entre humains, agents IA et monde physique",
+  "hero.desc":"Fini le clic et la navigation manuelle : votre agent IA personnel recherche, négocie, transige et collabore pour vous sur un réseau décentralisé de confiance. Vous fixez les objectifs, l'agent exécute — reliant cognition, numérique et monde physique.",
+  "hero.cta1":"Explorer la vision","hero.cta2":"Voir l'évolution",
+  "hero.s1":"Générations","hero.s2":"Idéaux centraux","hero.s3":"Contraintes clés",
+  "sec.gen.tag":"Évolution","sec.gen.title":"La route de Web1 à Web6",
+  "sec.gen.sub":"Chaque saut de paradigme redéfinit la relation entre l'humain et le réseau. Web 6.0 rend le web véritablement symbiotique pour la première fois.",
+  "g1.name":"Web en lecture seule","g1.desc":"Pages statiques, diffusion unidirectionnelle de l'information — l'utilisateur ne fait que consulter.",
+  "g2.name":"Web lecture-écriture","g2.desc":"Contenus générés par les utilisateurs et collaboration sociale ; les plateformes deviennent des centres, les données appartiennent aux géants.",
+  "g3.name":"Lire, écrire, posséder","g3.desc":"Blockchain et décentralisation rendent la propriété numérique aux utilisateurs ; un réseau de valeur émerge.",
+  "g4.name":"Web intelligent","g4.desc":"L'IA comprend les contenus, prédit les services, connecte tout — le réseau commence à vous comprendre.",
+  "g5.name":"Web centré humain","g5.desc":"Identité souveraine, propriété des données, perception émotionnelle — le web tourne autour des personnes.",
+  "g6.badge":"Vision du futur","g6.name":"Web symbiotique autonome","g6.desc":"Les agents deviennent les acteurs principaux ; humains et réseau atteignent une collaboration de niveau cognitif, en boucle profonde avec le physique.",
+  "sec.ideals.tag":"Vision","sec.ideals.title":"Les six idéaux centraux du Web 6.0",
+  "sec.ideals.sub":"Du paradigme d'interaction à la boucle physique, six idéaux dessinent le portrait complet de l'internet de demain.",
+  "i1.title":"Les agents IA, citoyens de première classe","i1.desc":"Votre agent IA personnel recherche, négocie, transige et collabore en votre nom. Les acteurs du réseau deviennent les humains plus des flottes d'agents autonomes : vous fixez les objectifs et supervisez, sans micro-opérations.",
+  "i2.title":"Symbiose cognitive humain-réseau","i2.desc":"Au-delà du clavier et de l'écran : les interfaces cerveau-machine (BCI) permettent à la pensée et à l'intention d'interagir directement avec le réseau — la vision de l'« Internet de l'Esprit ».",
+  "i3.title":"Identité décentralisée vérifiable","i3.desc":"Fondée sur W3C DID et les credentials vérifiables : l'utilisateur contrôle pleinement identité, données et réputation sur toutes les plateformes. Les agents agissent avec des autorisations vérifiées — confidentialité par défaut.",
+  "i4.title":"Orchestration unifiée des IA hétérogènes","i4.desc":"Fin de la fragmentation des modèles, frameworks et protocoles : une couche d'abstraction unifiée permet de déployer une application partout, de transférer des compétences entre modèles et de faire évoluer les systèmes seuls.",
+  "i5.title":"Boucle profonde physique-numérique","i5.desc":"Le web ne se limite plus au navigateur : capteurs IoT, appareils physiques et jumeaux numériques s'interconnectent — le réseau perçoit le réel et les agents agissent dessus.",
+  "i6.title":"Autonome, observable, durable","i6.desc":"Des systèmes qui s'optimisent et se réparent seuls, observables et auditables de bout en bout ; des incitations de réputation distribuées soutiennent l'économie ; la collaboration humain-machine — jamais une prise de contrôle totale par l'IA — garde l'humain aux commandes.",
+  "sec.const.tag":"Défis","sec.const.title":"Les contraintes majeures derrière l'idéal",
+  "sec.const.sub":"Regarder l'envers de l'idéal : technologie, sécurité, éthique et normes sont les quatre portes sur la route du Web 6.0.",
+  "c1.title":"La BCI reste lointaine","c1.desc":"Le matériel BCI et le décodage des signaux neuronaux sont encore loin d'une adoption commerciale massive.",
+  "c2.title":"Risques de sécurité à grande échelle","c2.desc":"Les agents autonomes peuvent être détournés, produire de fausses interactions et des biais algorithmiques — les frontières de sécurité sont urgentes.",
+  "c3.title":"Vie privée, éthique et droit","c3.desc":"Qui répond des actes d'un agent IA ? Comment empêcher les fuites de données de pensée ? Les règles n'existent pas encore.",
+  "c4.title":"Pas encore de protocoles ni de normes","c4.desc":"Aujourd'hui, il s'agit surtout d'un concept académique et prospectif — aucun standard officiel unifié ni spécification industrielle mature.",
+  "quote.text":"Bâtir un internet où humains et agents IA <b>coexistent en symbiose</b> : l'humain exprime son intention, les agents autonomes accomplissent des tâches complexes dans un réseau décentralisé de confiance, reliant <b>cognition, numérique et monde physique</b> — l'utilisateur possède son identité et la souveraineté de ses données, par la collaboration humain-machine plutôt qu'en manipulant des pages web.",
+  "quote.label":"Web 6.0 · En une phrase",
+  "footer.name":"Web Symbiotique","footer.note":"Ce site est une vitrine conceptuelle de la vision de l'internet de nouvelle génération. Web 6.0 est un concept d'avant-garde sans standard officiel unifié.",
+  "footer.rights":"Tous droits réservés"
+},
+"ar":{
+  "nav.timeline":"التطور","nav.ideals":"الرؤية الجوهرية","nav.constraints":"التحديات","nav.summary":"الخلاصة",
+  "hero.tag":"رؤية الجيل القادم من الإنترنت · مفهوم رائد",
+  "hero.sub":"الويب التكافلي · الإنترنت المستقل — <b>تعايش عميق</b> بين البشر ووكلاء الذكاء الاصطناعي والعالم المادي",
+  "hero.desc":"وداعًا للنقر والتصفح اليدوي: وكيلك الشخصي بالذكاء الاصطناعي يبحث ويتفاوض ويتعامل ويتعاون نيابةً عنك عبر شبكة لامركزية موثوقة. أنت تحدد الأهداف، والوكيل ينفذ — لربط الإدراك والعالمين الرقمي والمادي.",
+  "hero.cta1":"استكشف الرؤية","hero.cta2":"شاهد التطور",
+  "hero.s1":"أجيال","hero.s2":"مثالى رئيسية","hero.s3":"قيود رئيسية",
+  "sec.gen.tag":"التطور","sec.gen.title":"الطريق من الويب 1 إلى الويب 6",
+  "sec.gen.sub":"كل قفزة نموذجية تعيد تعريف العلاقة بين الإنسان والشبكة. الويب 6.0 يجعل الشبكة تكافلية مع البشر للمرة الأولى.",
+  "g1.name":"الويب للقراءة فقط","g1.desc":"صفحات ثابتة ونشر أحادي الاتجاه للمعلومات — المستخدم يتصفح فقط دون مشاركة.",
+  "g2.name":"ويب القراءة والكتابة","g2.desc":"صعود المحتوى الذي ينشئه المستخدمون والتعاون الاجتماعي؛ تصبح المنصات مراكز وتملك الشركات العملاقة البيانات.",
+  "g3.name":"اقرأ واكتب وامتلك","g3.desc":"البلوك تشين واللامركزية يعيدان ملكية الأصول الرقمية إلى المستخدمين؛ تتشكل شبكة قيمة.",
+  "g4.name":"الويب الذكي","g4.desc":"الذكاء الاصطناعي يفهم المحتوى ويتنبأ بالخدمات ويربط كل شيء — تبدأ الشبكة بفهمك.",
+  "g5.name":"الويب المتمحور حول الإنسان","g5.desc":"هوية ذاتية وسيادة على البيانات وإدراك عاطفي — تدور الشبكة حول الإنسان.",
+  "g6.badge":"رؤية المستقبل","g6.name":"الويب التكافلي المستقل","g6.desc":"يصبح الوكلاء الفاعلين الرئيسيين؛ يحقق الإنسان والشبكة تعاونًا على المستوى الإدراكي مع حلقة عميقة بين الواقع والافتراض.",
+  "sec.ideals.tag":"الرؤية","sec.ideals.title":"المثاليات الست الجوهرية للويب 6.0",
+  "sec.ideals.sub":"من نموذج التفاعل إلى الحلقة المادية، ترسم المثاليات الست الصورة الكاملة لإنترنت الجيل القادم.",
+  "i1.title":"وكلاء الذكاء الاصطناعي مواطنون من الدرجة الأولى","i1.desc":"وكيلك الشخصي يبحث ويتفاوض ويتعامل ويتعاون بالنيابة عنك؛ يصبح فاعلو الشبكة بشرًا يساندهم أسراب من الوكلاء المستقلين — أنت تحدد الأهداف وتراقب القرارات دون انشغال بالتفاصيل.",
+  "i2.title":"تعايش إدراكي بين الإنسان والشبكة","i2.desc":"تجاوزًا للوحة المفاتيح والشاشة: تتيح واجهات الدماغ والحاسوب (BCI) للفكرة والنية التفاعل مع الشبكة مباشرة — رؤية «إنترنت العقل».",
+  "i3.title":"هوية لامركزية قابلة للتحقق","i3.desc":"مبنية على W3C DID والاعتمادات القابلة للتحقق: يتحكم المستخدم الكامل بهويته وبياناته وسمعته عبر كل المنصات؛ يتصرف الوكلاء باعتمادات موثوقة — الخصوصية افتراضية.",
+  "i4.title":"تنسيق موحّد للذكاء غير المتجانس","i4.desc":"إنهاء تشتت النماذج وأطر الوكلاء والبروتوكولات: طبقة تجريد موحدة تتيح نشر تطبيق واحد في كل مكان، ونقل المهارات بين النماذج، وأنظمة تتطور ذاتيًا.",
+  "i5.title":"حلقة عميقة بين المادي والرقمي","i5.desc":"لم يعد الويب محصورًا في المتصفح: مستشعرات إنترنت الأشياء والأجهزة المادية والتوائم الرقمية تترابط — الشبكة تستشعر الواقع والوكلاء يتصرفون فيه.",
+  "i6.title":"مستقل وقابل للرصد ومستدام","i6.desc":"أنظمة تُحسِّن وتُصلح نفسها مع رصد وتدقيق من طرف إلى طرف؛ حوافز سمعة موزعة تدعم اقتصادًا مستدامًا؛ تعاون الإنسان والآلة — لا استحواذ كامل للذكاء الاصطناعي — يبقر القرار النهائي للإنسان.",
+  "sec.const.tag":"التحديات","sec.const.title":"القيود الجوهرية خلف المثالية",
+  "sec.const.sub":"مواجهة الوجه الآخر للمثالية: التقنية والأمن والأخلاقيات والمعايير هي البوابات الأربع في طريق الويب 6.0.",
+  "c1.title":"واجهات الدماغ ما تزال بعيدة","c1.desc":"أجهزة BCI وتحليل الإشارات العصبية ما تزال بعيدة عن التبني التجاري الواسع.",
+  "c2.title":"مخاطر أمنية لوكلاء واسعي النطاق","c2.desc":"قد يُختطف الوكلاء المستقلون وينتجون تفاعلات زائفة وتحيزًا خوارزميًا — حدود الأمن مطلوبة بشكل عاجل.",
+  "c3.title":"خصوصية وأخلاقيات وقانون","c3.desc":"من يتحمل مسؤولية أفعال وكيل الذكاء الاصطناعي؟ كيف نمنع تسرب بيانات الأفكار؟ القواعد لم تُستكمل بعد.",
+  "c4.title":"لا بروتوكولات أو معايير بعد","c4.desc":"اليوم هو بالأساس مفهوم أكاديمي استشرافي — لا يوجد معيار رسمي موحد ولا مواصفات صناعية ناضجة.",
+  "quote.text":"بناء إنترنت يتعايش فيه البشر ووكلاء الذكاء الاصطناعي <b>تعايشًا تكافليًا</b>: الإنسان يعبّر عن نيته، والوكلاء المستقلون ينجزون المهام المعقدة في شبكة لامركزية موثوقة، لربط <b>الإدراك والعالمين الرقمي والمادي</b> — المستخدم يملك هويته وسيادة بياناته، عبر تعاون الإنسان والآلة بدلًا من تشغيل صفحات الويب يدويًا.",
+  "quote.label":"الويب 6.0 · في جملة واحدة",
+  "footer.name":"الويب التكافلي","footer.note":"هذا الموقع عرض مفاهيمي لرؤية الجيل القادم من الإنترنت. الويب 6.0 مفهوم رائد دون معيار رسمي موحد.",
+  "footer.rights":"جميع الحقوق محفوظة"
+},
+"ru":{
+  "nav.timeline":"Эволюция","nav.ideals":"Ключевые идеи","nav.constraints":"Вызовы","nav.summary":"Итог",
+  "hero.tag":"Видение интернета нового поколения · Передовая концепция",
+  "hero.sub":"Симбиотическая сеть · Автономный интернет — <b>глубокий симбиоз</b> человека, ИИ-агентов и физического мира",
+  "hero.desc":"Больше не нужно щёлкать мышью и листать страницы: ваш персональный ИИ-агент ищет, договаривается, совершает сделки и сотрудничает за вас в доверенной децентрализованной сети. Человек ставит цели, агенты выполняют — связка познания, цифрового и физического миров.",
+  "hero.cta1":"Изучить идеи","hero.cta2":"Смотреть эволюцию",
+  "hero.s1":"Поколений","hero.s2":"Ключевых идей","hero.s3":"Ключевых ограничений",
+  "sec.gen.tag":"Evolution","sec.gen.title":"Путь от Web 1 к Web 6",
+  "sec.gen.sub":"Каждая смена парадигмы переопределяет отношения человека и сети. Web 6.0 впервые делает сеть по-настоящему симбиотической.",
+  "g1.name":"Сеть только для чтения","g1.desc":"Статические страницы, одностороннее распространение информации — пользователь лишь смотрит, не участвует.",
+  "g2.name":"Сеть чтения и записи","g2.desc":"Пользовательский контент и социальное взаимодействие; платформы становятся центрами, а данные принадлежат гигантам.",
+  "g3.name":"Читай, пиши, владей","g3.desc":"Блокчейн и децентрализация возвращают цифровую собственность пользователям — формируется сеть ценности.",
+  "g4.name":"Интеллектуальная сеть","g4.desc":"ИИ понимает контент, предсказывает сервисы и связывает всё вокруг — сеть начинает «понимать» вас.",
+  "g5.name":"Человекоцентричная сеть","g5.desc":"Суверенная личность, право на данные, распознавание эмоций — сеть вращается вокруг человека.",
+  "g6.badge":"Видение будущего","g6.name":"Симбиотическая автономная сеть","g6.desc":"Агенты становятся главными действующими лицами: человек и сеть сотрудничают на когнитивном уровне, замыкая цифровой и физический миры.",
+  "sec.ideals.tag":"Vision","sec.ideals.title":"Шесть ключевых идей Web 6.0",
+  "sec.ideals.sub":"От модели взаимодействия до физического контура — шесть идей создают полную картину интернета нового поколения.",
+  "i1.title":"ИИ-агенты — полноправные участники","i1.desc":"Персональный ИИ-агент ищет, договаривается, совершает сделки и сотрудничает от вашего имени. Участниками сети становятся люди вместе с роями автономных агентов: человек ставит цели и контролирует решения, не занимаясь мелкими операциями.",
+  "i2.title":"Когнитивный симбиоз человека и сети","i2.desc":"За пределами клавиатуры, мыши и экрана: нейроинтерфейсы (BCI) позволяют мысли и намерениям взаимодействовать с сетью напрямую — видение «интернета сознания».",
+  "i3.title":"Децентрализованная проверяемая личность","i3.desc":"На базе W3C DID и верифицируемых удостоверений: пользователь полностью контролирует личность, данные и репутацию на любых платформах. Агенты действуют по авторизованным удостоверениям, приватность защищена по умолчанию.",
+  "i4.title":"Единая оркестрация разнородного ИИ","i4.desc":"Конец раздробленности моделей, фреймворков и протоколов: единый слой абстракции позволяет разворачивать одно приложение где угодно, переносить навыки между моделями и давать системе способность к саморазвитию.",
+  "i5.title":"Глубокий контур виртуального и физического","i5.desc":"Сеть больше не ограничена браузером: датчики IoT, физические устройства и цифровые двойники связаны — сеть воспринимает реальность, а агенты действуют в ней.",
+  "i6.title":"Автономная, наблюдаемая, устойчивая экосистема","i6.desc":"Самооптимизация и самовосстановление, сквозная наблюдаемость и аудит; распределённые стимулы репутации поддерживают экономику; сотрудничество человека и машины — а не полный захват ИИ — оставляет последнее решение за человеком.",
+  "sec.const.tag":"Challenges","sec.const.title":"Ограничения, стоящие за мечтой",
+  "sec.const.sub":"Взгляд на обратную сторону идеала: технологии, безопасность, этика и стандарты — четыре врата на пути к Web 6.0.",
+  "c1.title":"Нейроинтерфейсы ещё далеки","c1.desc":"Аппаратные средства BCI и расшифровка нейросигналов всё ещё далеки от массового коммерческого применения.",
+  "c2.title":"Риски безопасности массовых агентов","c2.desc":"Автономные агенты могут быть захвачены, создавать фальшивые взаимодействия и алгоритмические предубеждения — границы безопасности нужны срочно.",
+  "c3.title":"Приватность, этика и право","c3.desc":"Кто отвечает за действия ИИ-агента? Как предотвратить утечку данных мыслей? Правила ещё не готовы.",
+  "c4.title":"Протоколов и стандартов пока нет","c4.desc":"Пока это в основном академическая и перспективная концепция — нет ни единого официального стандарта, ни зрелых промышленных спецификаций.",
+  "quote.text":"Построить интернет, в котором человек и ИИ-агенты <b>сосуществуют в симбиозе</b>: человек выражает намерение, автономные агенты выполняют сложные задачи в доверенной децентрализованной сети, объединяя <b>познание, цифровой и физический миры</b>; пользователь владеет личностью и суверенитетом данных, а сотрудничество человека и машины заменяет ручное управление веб-страницами.",
+  "quote.label":"Web 6.0 · Одной фразой",
+  "footer.name":"Симбиотическая сеть","footer.note":"Этот сайт — концептуальная витрина видения интернета нового поколения. Web 6.0 — передовая концепция без единого официального стандарта.",
+  "footer.rights":"Все права защищены"
+},
+"ja":{
+  "nav.timeline":"時代の変遷","nav.ideals":"コアな理想","nav.constraints":"課題と制約","nav.summary":"ビジョン総括",
+  "hero.tag":"次世代インターネットのビジョン · 最先端コンセプト",
+  "hero.sub":"共生ウェブ · 自律インターネット —— 人・AIエージェント・物理世界の<b>深い共生</b>",
+  "hero.desc":"手動でのクリックや閲覧はもう不要になります。あなたのパーソナル AI エージェントが、信頼できる分散型ネットワーク上で検索・交渉・取引・協働を代行します。人が目標を示し、エージェントが実行する——認知・デジタル・物理世界をつなぐインターネット。",
+  "hero.cta1":"コアな理想を見る","hero.cta2":"時代の変遷を見る",
+  "hero.s1":"世代","hero.s2":"コアな理想","hero.s3":"主要な制約",
+  "sec.gen.tag":"Evolution","sec.gen.title":"Web1 から Web6 への進化の道",
+  "sec.gen.sub":"パラダイムが移るたび、人とネットワークの関係は再定義されてきました。Web 6.0 は初めてネットワークを人と「共生」させます。",
+  "g1.name":"読み取り専用ウェブ","g1.desc":"静的なページ、一方向の情報配信。ユーザーは閲覧するだけで参加できません。",
+  "g2.name":"読み書きウェブ","g2.desc":"ユーザー生成コンテンツとソーシャル協働が台頭。プラットフォームが中心となり、データは巨大企業に帰属します。",
+  "g3.name":"読み・書き・所有","g3.desc":"ブロックチェーンと分散化によりデジタル所有権がユーザーへ戻り、価値のネットワークが形になります。",
+  "g4.name":"知能ウェブ","g4.desc":"AI がコンテンツを理解し、サービスを予測し、万物がつながる——ネットワークが「あなたを理解」し始めます。",
+  "g5.name":"人間中心ウェブ","g5.desc":"自律的なアイデンティティ、データ主権、感情認識。ネットワークが人を中心に回ります。",
+  "g6.badge":"未来のビジョン","g6.name":"共生的な自律ウェブ","g6.desc":"エージェントが主役となり、人とネットワークが認知レベルで協働し、仮想と現実が深く循環します。",
+  "sec.ideals.tag":"Vision","sec.ideals.title":"Web 6.0 の6つのコアな理想",
+  "sec.ideals.sub":"インタラクションの枠組みから物理世界との循環まで、6つの理想が次世代インターネットの全体像を描き出します。",
+  "i1.title":"AI エージェントが第一級の主体に","i1.desc":"パーソナル AI エージェントが検索・交渉・取引・協働を代行します。ネットワークの主体は人と無数の自律エージェントとなり、人は目標を与えて意思決定を監督するだけで、細かな操作に追われなくなります。",
+  "i2.title":"認知レベルの人とネットワークの共生","i2.desc":"キーボード・マウス・画面を超えて：脳機インターフェース（BCI）により、思考や意図が直接ネットワークと交わります。ネットワークは人の感情や認知を理解する——「心のインターネット」構想。",
+  "i3.title":"分散型で検証可能なネイティブ ID","i3.desc":"W3C DID と検証可能なクレデンシャルを基盤に、アイデンティティ・データ・評判をユーザーが完全に掌握し、プラットフォームを越えて通用します。エージェントは権限付きクレデンシャルを携えて取引し、プライバシーは既定で保護されます。",
+  "i4.title":"異種 AI の統合オーケストレーション","i4.desc":"モデル・エージェントフレームワーク・プロトコルの分断を解消します。統一された抽象化レイヤーにより、一度書いたアプリはどこでも動き、スキルはモデルを越えて再利用され、システムは自己進化します。",
+  "i5.title":"仮想と現実の深い循環","i5.desc":"Web はブラウザの中に閉じなくなります。IoT センサー・物理デバイス・デジタルツインが連動し、ネットワークが現実を感知し、エージェントが現実に作用する双方向のループが実現します。",
+  "i6.title":"自律・可観測・持続可能なエコシステム","i6.desc":"自己最適化と自己修復、エンドツーエンドの可観測性と監査性。分散型の評判インセンティブが経済を持続させ、AI による全面接管ではなく人との協働により、最終決定権は人が保持します。",
+  "sec.const.tag":"Challenges","sec.const.title":"理想の裏側にある制約",
+  "sec.const.sub":"理想の反対側に向き合う：技術・安全・倫理・標準という、Web 6.0 への道に立ちはだかる4つの関門。",
+  "c1.title":"脳機インターフェースはまだ遠い","c1.desc":"BCI ハードウェアと神経信号の解読技術は、大規模な実用化まで長い道のりがあります。",
+  "c2.title":"大規模エージェントの安全リスク","c2.desc":"自律エージェントは乗っ取られ、偽の相互作用やアルゴリズムの偏りを生む恐れがあり、安全境界の確立が急務です。",
+  "c3.title":"プライバシー・倫理・法の難題","c3.desc":"AI エージェントの行為責任を誰が負うのか。思考データの漏えいをどう防ぐのか。ルールはまだ整っていません。",
+  "c4.title":"プロトコルと標準は未整備","c4.desc":"現時点では学術的・先端的な構想が中心で、統一された公式標準も成熟した産業仕様も存在しません。",
+  "quote.text":"人と AI エージェントが<b>共生</b>するインターネットを築く。人が意図を示し、自律エージェントが信頼できる分散型ネットワーク上で複雑なタスクを完遂し、<b>認知・デジタル・物理世界</b>を貫きます。アイデンティティとデータ主権はユーザーに帰属し、ウェブページを手作業で操作するのではなく、人間と機械が協働します。",
+  "quote.label":"Web 6.0 · 一言で言えば",
+  "footer.name":"共生ウェブ","footer.note":"本サイトは次世代インターネットのビジョンを紹介するコンセプトページです。Web 6.0 は先端的な構想であり、統一された公式標準はまだ存在しません。",
+  "footer.rights":"All Rights Reserved（無断転載禁止）"
+}
+};
+
+/* ================== 語言切換 ================== */
+/* ================== 語言列表與彈窗文案 ================== */
+const LANGS = [
+  {code:"zh-TW", tag:"繁", native:"繁體中文", sub:"Chinese, Traditional"},
+  {code:"zh-CN", tag:"简", native:"简体中文", sub:"Chinese, Simplified"},
+  {code:"en",    tag:"EN", native:"English",   sub:"English"},
+  {code:"ja",    tag:"JA", native:"日本語",     sub:"Japanese"},
+  {code:"ru",    tag:"RU", native:"Русский",   sub:"Russian"},
+  {code:"es",    tag:"ES", native:"Español",   sub:"Spanish"},
+  {code:"fr",    tag:"FR", native:"Français",  sub:"French"},
+  {code:"ar",    tag:"AR", native:"العربية",   sub:"Arabic"}
+];
+const MODAL_UI = {
+  "zh-CN":{title:"选择语言", hint:"共 8 种语言 · 阿拉伯语将自动切换为从右至左布局"},
+  "zh-TW":{title:"選擇語言", hint:"共 8 種語言 · 阿拉伯語將自動切換為由右至左版面"},
+  "en":   {title:"Choose Language", hint:"8 languages · Arabic switches the layout to right-to-left"},
+  "ja":   {title:"言語を選択", hint:"8 言語 · アラビア語は自動的に右から左のレイアウトに切り替わります"},
+  "ru":   {title:"Выберите язык", hint:"8 языков · Арабский язык переключает вёрстку справа налево"},
+  "es":   {title:"Elegir idioma", hint:"8 idiomas · El árabe cambia el diseño a derecha-izquierda"},
+  "fr":   {title:"Choisir la langue", hint:"8 langues · L'arabe bascule la mise en page en droite-gauche"},
+  "ar":   {title:"اختيار اللغة", hint:"8 لغات · العربية تبدّل التخطيط إلى من اليمين إلى اليسار"}
+};
+const RTL_LANGS = ["ar"];
+let currentLang = "zh-CN";
+
+const langBtn   = document.getElementById("langBtn");
+const langLabel = document.getElementById("langLabel");
+const langModal = document.getElementById("langModal");
+const langGrid  = document.getElementById("langGrid");
+const modalTitle= document.getElementById("modalTitle");
+const modalHint = document.getElementById("modalHint");
+const langClose = document.getElementById("langClose");
+
+/* 渲染語言選項卡片 */
+function renderLangOptions(){
+  langGrid.innerHTML = LANGS.map(l=>`
+    <button class="lang-opt${l.code===currentLang?" active":""}" data-code="${l.code}" type="button">
+      <span class="flag">${l.tag}</span>
+      <span class="txt">
+        <span class="native">${l.native}</span>
+        <span class="sub">${l.sub}</span>
+      </span>
+      <span class="check">✓</span>
+    </button>`).join("");
+  langGrid.querySelectorAll(".lang-opt").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      setLang(btn.dataset.code);
+      closeModal();
+    });
+  });
+  const ui = MODAL_UI[currentLang] || MODAL_UI["zh-CN"];
+  modalTitle.textContent = ui.title;
+  modalHint.textContent  = ui.hint;
+}
+
+function openModal(){
+  renderLangOptions();
+  langModal.classList.add("open");
+  document.body.classList.add("modal-open");
+  const first = langGrid.querySelector(".lang-opt");
+  if(first) first.focus();
+}
+function closeModal(){
+  langModal.classList.remove("open");
+  document.body.classList.remove("modal-open");
+}
+langBtn.addEventListener("click", openModal);
+langClose.addEventListener("click", closeModal);
+langModal.addEventListener("click", e=>{ if(e.target === langModal) closeModal(); });
+document.addEventListener("keydown", e=>{ if(e.key === "Escape") closeModal(); });
+
+function setLang(lang){
+  const dict = I18N[lang] || I18N["zh-CN"];
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key = el.getAttribute("data-i18n");
+    if(dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+  currentLang = lang;
+  // 阿拉伯語切換為 RTL
+  const isRTL = RTL_LANGS.includes(lang);
+  document.documentElement.dir = isRTL ? "rtl" : "ltr";
+  document.documentElement.lang = lang;
+  // 不同語言選用不同字體
+  let font = '"Inter","Noto Sans SC",system-ui,sans-serif';
+  if(lang === "zh-TW") font = '"Inter","Noto Sans TC",system-ui,sans-serif';
+  else if(lang === "ja") font = '"Inter","Noto Sans JP",system-ui,sans-serif';
+  else if(lang === "ar") font = '"Cairo","Noto Sans SC",system-ui,sans-serif';
+  else if(lang === "zh-CN") font = '"Inter","Noto Sans SC",system-ui,sans-serif';
+  else if(lang === "ru") font = '"Inter","Noto Sans SC",system-ui,sans-serif';
+  document.body.style.fontFamily = font;
+  // 更新導航按鈕上的語言名稱
+  const meta = LANGS.find(l=> l.code === lang);
+  langLabel.textContent = meta ? meta.native : lang;
+  try{ localStorage.setItem("web6-lang", lang); }catch(e){}
+}
+
+// 初始語言：localStorage > 瀏覽器語言 > 簡體中文
+(function initLang(){
+  let saved = null;
+  try{ saved = localStorage.getItem("web6-lang"); }catch(e){}
+  if(saved && I18N[saved]) return setLang(saved);
+  const nav = (navigator.language || "zh-CN").toLowerCase();
+  if(nav.startsWith("zh-tw") || nav.startsWith("zh-hk") || nav.startsWith("zh-hant")) return setLang("zh-TW");
+  if(nav.startsWith("zh")) return setLang("zh-CN");
+  if(nav.startsWith("en")) return setLang("en");
+  if(nav.startsWith("es")) return setLang("es");
+  if(nav.startsWith("fr")) return setLang("fr");
+  if(nav.startsWith("ar")) return setLang("ar");
+  if(nav.startsWith("ja")) return setLang("ja");
+  if(nav.startsWith("ru")) return setLang("ru");
+  setLang("zh-CN");
+})();
+
+/* ================== 頁腳版權年份 ================== */
+document.getElementById("year").textContent = new Date().getFullYear();
+
+/* ================== 行動端導航 ================== */
+const navToggle = document.getElementById("navToggle");
+const navLinks = document.getElementById("navLinks");
+navToggle.addEventListener("click", ()=> navLinks.classList.toggle("open"));
+navLinks.querySelectorAll("a").forEach(a=> a.addEventListener("click", ()=> navLinks.classList.remove("open")));
+
+/* ================== 滾動顯現動畫 ================== */
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+  });
+},{threshold:.12});
+document.querySelectorAll(".reveal").forEach(el=> io.observe(el));
+</script>
+</body>
+</html>
